@@ -11,5 +11,25 @@ class ActiveSupport::TestCase
   # -- they do not yet inherit this setting
   fixtures :all
 
-  # Add more helper methods to be used by all tests here...
+  require "capybara/rails"
+
+  class ActionDispatch::IntegrationTest
+    include Capybara::DSL
+    require 'capybara/poltergeist'
+    Capybara.javascript_driver = :poltergeist
+
+    def teardown
+      Capybara.current_driver = nil
+    end
+
+    class ActiveRecord::Base
+      mattr_accessor :shared_connection
+      @@shared_connection = nil
+      def self.connection
+        @@shared_connection || retrieve_connection
+      end
+    end
+
+    ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
+  end
 end
